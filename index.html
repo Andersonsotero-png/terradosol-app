@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Parquinho App</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="manifest" href="manifest.json" />
+</head>
+<body>
+  <header>
+    <h1>Parquinho App</h1>
+    <nav>
+      <button data-tab="cadastro" class="active">Cadastro</button>
+      <button data-tab="busca">Busca</button>
+      <button data-tab="historico">Histórico</button>
+      <button data-tab="marketing">Marketing</button>
+      <button data-tab="impressao">Impressão</button>
+    </nav>
+  </header>
+
+  <main>
+    <!-- CADASTRO -->
+    <section id="cadastro" class="tab active">
+      <form id="formCadastro" autocomplete="off">
+        <label>
+          Nome completo:
+          <input type="text" name="nome" required />
+        </label>
+        <label>
+          Data de nascimento:
+          <input type="date" name="dataNascimento" required />
+        </label>
+        <label>
+          Idade:
+          <input type="number" name="idade" readonly />
+        </label>
+        <label>
+          Telefone:
+          <input type="tel" name="telefone" />
+        </label>
+        <label>
+          Email:
+          <input type="email" name="email" />
+        </label>
+        <div class="row">
+          <button type="submit">Cadastrar</button>
+          <button type="button" id="btnGerarTodosQR">Gerar QR de todos</button>
+        </div>
+      </form>
+
+      <div id="resultCadastro">
+        <h3>Último QR gerado</h3>
+        <div id="qrCodeCadastro"></div>
+      </div>
+
+      <hr />
+
+      <div id="cameraControls">
+        <h3>Leitor de QR (Câmera)</h3>
+        <div class="row">
+          <button id="btnStartCamera">Abrir câmera</button>
+          <button id="btnStopCamera" disabled>Fechar câmera</button>
+          <button id="btnRegistrarManual">Registrar Entrada/Saída Manual</button>
+        </div>
+        <div id="videoWrap">
+          <video id="video" autoplay playsinline></video>
+          <canvas id="scanCanvas" hidden></canvas>
+        </div>
+        <div id="scanMessage"></div>
+      </div>
+    </section>
+
+    <!-- BUSCA -->
+    <section id="busca" class="tab">
+      <input type="text" id="inputBusca" placeholder="Buscar por nome ou telefone..." />
+      <ul id="listaBusca"></ul>
+    </section>
+
+    <!-- HISTÓRICO -->
+    <section id="historico" class="tab">
+      <h2>Histórico de Cadastros e Movimentações</h2>
+      <div id="listaHistoricoContainer"></div>
+      <button id="btnExportJSON">Exportar JSON</button>
+      <button id="btnLimparTudo">Limpar tudo (apaga localStorage)</button>
+    </section>
+
+    <!-- MARKETING -->
+    <section id="marketing" class="tab">
+      <h2>Marketing & Promoções</h2>
+      <div id="marketingContent">
+        <p>Bem-vindo ao painel de marketing. Insira avisos, promoções ou links aqui.</p>
+      </div>
+      <textarea id="marketingInput" placeholder="Digite conteúdo de marketing..."></textarea>
+      <button id="btnSalvarMarketing">Salvar Marketing</button>
+    </section>
+
+    <!-- IMPRESSÃO -->
+    <section id="impressao" class="tab">
+      <h2>Impressão</h2>
+      <button id="btnImprimir">Imprimir Lista de Cadastros</button>
+      <div id="conteudoImpressao" hidden></div>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jsqr/dist/jsQR.min.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
