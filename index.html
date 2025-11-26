@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Terra do Sol - Gestão de Acessos</title>
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#0ea5ff" />
+  <link rel="icon" href="assets/icons/icon-192.png" />
+  <link rel="stylesheet" href="css/style.css" />
+  <!-- external libs -->
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script defer src="https://unpkg.com/html5-qrcode@2.3.7/minified/html5-qrcode.min.js"></script>
+</head>
+<body>
+<div class="app">
+  <header class="topbar">
+    <div class="brand">
+      <img class="logo" src="assets/img/logo.png" alt="Terra do Sol Logo">
+      <div>
+        <div class="brand-title">Terra do Sol</div>
+        <div class="brand-sub">Gestão de Acessos • CRM</div>
+      </div>
+    </div>
+
+    <nav class="tabs" role="tablist" aria-label="Navegação">
+      <button class="tab active" data-target="cadastro">Cadastro</button>
+      <button class="tab" data-target="presentes">Presentes</button>
+      <button class="tab" data-target="historico">Histórico</button>
+      <button class="tab" data-target="qr">Leitor QR</button>
+      <button class="tab" data-target="marketing">Marketing</button>
+      <button class="tab" data-target="busca">Busca</button>
+    </nav>
+  </header>
+
+  <main class="main">
+    <!-- CADASTRO -->
+    <section id="cadastro" class="panel active">
+      <div class="card">
+        <h2>Cadastro da Criança</h2>
+
+        <div class="form-row">
+          <label>Nome</label>
+          <input id="nomeCrianca" placeholder="Nome da criança" autocomplete="off">
+        </div>
+
+        <div class="form-row two-col">
+          <div>
+            <label>Data de nascimento</label>
+            <input type="date" id="dataNascimento">
+          </div>
+          <div>
+            <label>Idade (auto)</label>
+            <input id="idadeCrianca" type="number" placeholder="Idade" readonly>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <label>Altura</label>
+          <select id="alturaCrianca">
+            <option value="">Selecione</option>
+            <option value="<1m">Menor que 1m</option>
+            <option value=">=1m">1m ou mais</option>
+          </select>
+        </div>
+
+        <div class="form-row">
+          <label>Restrições / Alergias</label>
+          <textarea id="alergias" placeholder="Alergias / observações"></textarea>
+        </div>
+
+        <div class="form-row">
+          <label>Pode sair sozinho?</label>
+          <select id="podeSairSozinho"><option value="nao">Não</option><option value="sim">Sim</option></select>
+        </div>
+
+        <hr>
+
+        <h3>Responsável</h3>
+        <div class="form-row">
+          <label>Nome do responsável</label>
+          <input id="nomeResp" placeholder="Nome do responsável">
+        </div>
+
+        <div class="form-row two-col">
+          <div>
+            <label>Telefone (DDI+DDD+Número)</label>
+            <input id="telefoneResp" placeholder="5511999999999">
+          </div>
+          <div>
+            <label>Email</label>
+            <input id="emailResp" placeholder="email@exemplo.com">
+          </div>
+        </div>
+
+        <hr>
+
+        <h3>Local</h3>
+        <div class="setores">
+          <div class="setor-card" data-setor="Salão">Salão</div>
+          <div class="setor-card" data-setor="Coqueiro">Coqueiro</div>
+          <div class="setor-card" data-setor="Guarda-sol">Guarda-sol</div>
+        </div>
+
+        <div class="form-row">
+          <label>Mesa</label>
+          <input id="numeroMesa" type="number" placeholder="Número da mesa">
+        </div>
+
+        <hr>
+
+        <div class="form-row">
+          <label>Pulseira (automática)</label>
+          <input id="corPulseira" readonly placeholder="Cor automática">
+        </div>
+        <div class="form-row small"><label><input type="checkbox" id="manualPulseira"> Seleção manual</label></div>
+
+        <div class="qrcode-area">
+          <div id="qrcodeGerado" class="qrcode-box" aria-hidden="true"></div>
+          <div class="qr-info">
+            <div><strong>QR (dados)</strong></div>
+            <div id="qrIdLabel" style="color:var(--muted)">Nenhum</div>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button id="imprimirQR">Imprimir QR (adesivo)</button>
+          <button id="baixarQR">Baixar QR</button>
+          <button id="registrarCadastro">Salvar Cadastro</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- PRESENTES -->
+    <section id="presentes" class="panel">
+      <h2>Crianças Presentes</h2>
+      <div id="listaPresentes" class="list"></div>
+    </section>
+
+    <!-- HISTÓRICO -->
+    <section id="historico" class="panel">
+      <h2>Histórico</h2>
+      <div class="history-controls">
+        <button id="exportCsv">Exportar CSV</button>
+        <button id="limparHistorico">Limpar Histórico</button>
+      </div>
+      <div id="listaHistorico" class="list"></div>
+    </section>
+
+    <!-- QR LEITOR -->
+    <section id="qr" class="panel">
+      <h2>Leitor de QR</h2>
+      <div id="qrScanner" class="scanner" role="region" aria-label="QR scanner"></div>
+      <div id="resultadoLeitura" class="result" style="display:none"></div>
+
+      <div style="display:flex;gap:8px;justify-content:center;margin-top:12px">
+        <button id="iniciarLeitor">Iniciar Leitor</button>
+        <button id="pararLeitor">Parar Leitor</button>
+        <button id="testarLeitura">Teste (usar último ID)</button>
+      </div>
+      <small class="hint">Permita o uso da câmera e aponte para o QR gerado no cadastro (o QR contém os dados em JSON).</small>
+    </section>
+
+    <!-- MARKETING -->
+    <section id="marketing" class="panel">
+      <h2>Marketing</h2>
+      <div class="card">
+        <label><input type="checkbox" id="selecionarTodos"> Selecionar todos</label>
+        <div id="listaClientesMarketing" class="list"></div>
+
+        <div class="form-row">
+          <label>Assunto</label>
+          <input id="assuntoMarketing" placeholder="Assunto">
+        </div>
+        <div class="form-row">
+          <label>Mensagem</label>
+          <textarea id="mensagemMarketing" placeholder="Mensagem..."></textarea>
+        </div>
+
+        <div class="form-row">
+          <label>Imagem (opcional)</label>
+          <input type="file" id="imagemMarketing" accept="image/*">
+        </div>
+        <div id="previewImagem" style="margin-top:8px"></div>
+
+        <div class="actions">
+          <button id="enviarWhatsApp">Enviar WhatsApp</button>
+          <button id="enviarSMS">Enviar SMS</button>
+          <button id="enviarEmail">Enviar Email</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- BUSCA -->
+    <section id="busca" class="panel">
+      <h2>Busca</h2>
+      <div class="card">
+        <div class="form-row two-col">
+          <div>
+            <label>Nome ou ID</label>
+            <input id="buscaNome" placeholder="Nome, ID">
+          </div>
+          <div>
+            <label>Telefone</label>
+            <input id="buscaTelefone" placeholder="5511999999999">
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;justify-content:center;margin-top:8px">
+          <button id="btnBuscar">Buscar</button>
+          <button id="btnLimparBusca">Limpar</button>
+        </div>
+        <div id="resultadoBusca" class="list" style="margin-top:12px"></div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script src="js/script.js" defer></script>
+</body>
+</html>
