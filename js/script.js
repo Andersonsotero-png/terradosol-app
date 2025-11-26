@@ -394,3 +394,164 @@ document.addEventListener("DOMContentLoaded", () => {
         altura: client.altura,
         alergias: client.alergias,
         podeSairSozin
+          ho: client.podeSairSozinho,
+        responsavel: client.responsavel,
+        telefone: client.telefone,
+        email: client.email,
+        setor: client.setorPreferencia,
+        mesa: client.mesaPreferencia,
+        pulseira: client.pulseira,
+        entradaISO: start,
+        entradaDisplay: timeDisplay(start),
+        qrCode: client.qrCode
+      };
+      presentes.push(item);
+      saveAll();
+      atualizarPresentes();
+      resEl.innerHTML = "<div style='color:#0a7'>Entrada registrada: <strong>" + client.nome + "</strong> — " + timeDisplay(start) + "</div>";
+      // auto notify entry
+      autoNotifyEntry(item);
+      return;
+    }
+
+    if (present) {
+      const out = nowISO();
+      const t = duration(present.entradaISO, out);
+      const rec = { ...present, saidaISO: out, tempo: t };
+      historico.unshift(rec);
+      const idx = presentes.findIndex(p => p.id === present.id);
+      if (idx > -1) presentes.splice(idx, 1);
+      saveAll();
+      atualizarPresentes();
+      atualizarHistorico();
+      resEl.innerHTML = "<div style='color:#06c'>Saída registrada: <strong>" + present.nome + "</strong> — " + timeDisplay(out) + " (Permanência: " + t + ")</div>";
+      // auto notify exit
+      autoNotifyExit(rec);
+      return;
+    }
+  }
+
+  /* marketing (continuation) */
+  document.getElementById("selecionarTodos").onchange = function () { document.querySelectorAll(".clienteCheckbox").forEach(cb => cb.checked = this.checked); };
+  document.getElementById("imagemMarketing").onchange = function (e) {
+    const f = e.target.files[0], p = document.getElementById("previewImagem"); p.innerHTML = ""; if (!f) return; const img = document.createElement("img"); img.src = URL.createObjectURL(f); img.style.maxWidth = "160px"; img.style.borderRadius = "8px"; p.appendChild(img);
+  };
+
+  function getSelectedClients() {
+    const ids = Array.from(document.querySelectorAll(".clienteCheckbox:checked")).map(cb => cb.dataset.id);
+    if (ids.length === 0) { if (!confirm("Nenhum cliente selecionado. Enviar para todos?")) return []; return clients.map(c => c.id); }
+    return ids;
+  }
+
+  document.getElementById("enviarWhatsApp").onclick = async () => {
+    const ids = getSelectedClients(); if (!ids) return;
+    const subject = document.getElementById("assuntoMarketing").value || "";
+    const msg = document.getElementById("mensagemMarketing").value || "";
+    for (const id of ids) {
+      const c = clients.find(x => x.id === id); if (!c) continue;
+      const text = subject + "\n\n" + msg;
+      try {
+        window.open("https://wa.me/" + c.telefone + "?text=" + encodeURIComponent(text), "_blank");
+      } catch (err) { console.warn(err); }
+      await new Promise(r => setTimeout(r, 180));
+    }
+    alert("Envios iniciados (verifique abas/janelas).");
+  };
+
+  document.getElementById("enviarSMS").onclick = () => {
+    const ids = getSelectedClients(); if (!ids) return;
+    const msg = document.getElementById("mensagemMarketing").value || "";
+    ids.forEach(id => { const c = clients.find(x => x.id === id); if (!c) return; try { window.open("sms:" + c.telefone + "?body=" + encodeURIComponent(msg), "_blank"); } catch(e){} });
+  };
+
+  document.getElementById("enviarEmail").onclick = async () => {
+    const ids = getSelectedClients(); if (!ids) return;
+    const subject = document.getElementById("assuntoMarketing").value || "";
+    const msg = document.getElementById("mensagemMarketing").value || "";
+    for (const id of ids) {
+      const c = clients.find(x => x.id === id); if (!c) continue;
+      try { window.open("mailto:" + c.email + "?subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(msg), "_blank"); } catch(e){}
+      await new Promise(r => setTimeout(r, 180));
+    }
+    alert("Envios iniciados.");
+  };
+
+  /* clients list UI (marketing) */
+  function atualizarListaClients() {
+    const container = document.getElementById("listaClientesMarketing");
+    container.innerHTML = "";
+    if (clients.length === 0) { container.innerHTML = "<div class='card-reg'>Nenhum cliente cadastrado.</div>"; return; }
+    clients.forEach(c => {
+      const d = document.createElement("div"); d.className = "card-reg";
+      d.innerHTML = `
+        <label style="display:flex;align-items:center;gap:8px">
+          <input type="checkbox" class="clienteCheckbox" data-id="${c.id}">
+          <div>
+            <div style="font-weight:700">${c.nome}</div>
+            <div style="font-size:13px;color:var(--muted)">${c.telefone} • ${c.email}</div>
+          </div>
+        </label>
+        <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px">
+          <button onclick="registrarEntradaManual('${c.id}')">Entrada</button>
+          <button onclick="window.location.href='tel:${c.telefone}'">Ligar</button>
+          <button onclick="window.open('https://wa.me/${c.telefone}','_blank')">Whats</button>
+        </div>
+      `;
+      container.appendChild(d);
+    });
+  }
+
+  /* busca */
+  document.getElementById("btnBuscar").onclick = () => {
+    const qName = (document.getElementById("buscaNome").value || "").toLowerCase().trim();
+    const qTel = (document.getElementById("buscaTelefone").value || "").trim();
+    const results = clients.filter(c => {
+      if (qName && (c.nome.toLowerCase().includes(qName) || c.id.toLowerCase().includes(qName))) return true;
+      if (qTel && c.telefone.includes(qTel)) return true;
+      return false;
+    });
+    const area = document.getElementById("resultadoBusca");
+    area.innerHTML = "";
+    if (results.length === 0) { area.innerHTML = "<div class='card-reg'>Nenhum resultado.</div>"; return; }
+    results.forEach(r => {
+      const el = document.createElement("div"); el.className = "card-reg";
+      el.innerHTML = `
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div><strong>${r.nome}</strong><div style="font-size:13px;color:var(--muted)">${r.telefone} • ${r.email}</div></div>
+          <div style="display:flex;gap:8px">
+            <button onclick="registrarEntradaManual('${r.id}')">Entrada</button>
+            <button onclick="(function(){ const idx = presentes.findIndex(p=>p.id==='${r.id}'); if (idx>-1) registrarSaidaManualmente(idx); else alert('Não está presente.'); })()">Saída</button>
+            <button onclick="window.location.href='tel:${r.telefone}'">Ligar</button>
+            <button onclick="window.open('https://wa.me/${r.telefone}','_blank')">Whats</button>
+          </div>
+        </div>
+      `;
+      area.appendChild(el);
+    });
+  };
+  document.getElementById("btnLimparBusca").onclick = () => { document.getElementById("buscaNome").value=''; document.getElementById("buscaTelefone").value=''; document.getElementById("resultadoBusca").innerHTML=''; };
+
+  /* inicial render */
+  function inicializarUI() {
+    atualizarListaClients();
+    atualizarPresentes();
+    atualizarHistorico();
+  }
+  inicializarUI();
+
+  /* auto-notifications (open wa.me or sms when entry/exit occurs) */
+  function autoNotifyEntry(item) {
+    // Build text
+    const text = `Entrada registrada: ${item.nome} — ${item.entradaDisplay}`;
+    try { window.open("https://wa.me/" + item.telefone + "?text=" + encodeURIComponent(text), "_blank"); } catch(e) {}
+  }
+  function autoNotifyExit(item) {
+    const text = `Saída registrada: ${item.nome} — ${timeDisplay(item.saidaISO)} (Permanência: ${item.tempo})`;
+    try { window.open("https://wa.me/" + item.telefone + "?text=" + encodeURIComponent(text), "_blank"); } catch(e) {}
+  }
+
+  /* expose for debug */
+  window._app = { clients, presentes, historico, saveAll };
+
+}); // DOMContentLoaded
+
